@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Android Collection Project</string>
+    <string name="InstaKiloGram">InstaKiloGram</string>
+    <string name="myName">Zedric Marc Tabinas</string>
+    <string name="partnerName">Zak Floreta</string>
+    <string name="greeting">Hello World! sa imong kagaral</string>
+</resources>
