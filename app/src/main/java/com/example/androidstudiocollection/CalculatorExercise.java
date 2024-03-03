@@ -1,74 +1,145 @@
 package com.example.androidstudiocollection;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
-import com.google.android.material.button.MaterialButton;
+import java.text.DecimalFormat;
 
-public class CalculatorExercise extends AppCompatActivity implements View.OnClickListener {
+public class CalculatorExercise extends AppCompatActivity {
 
-    TextView answerTV, equationTV;
-    MaterialButton b1,b2,b3,b4,b5,b6,b7,b8,b9,b0,addition,subtraction,multiplication,division,open,close,equals,b00,btnDot,clear;
-
+    private TextView textView;
+    private StringBuilder input;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculator_exercise);
 
-        answerTV = findViewById(R.id.tvAnswer);
-        equationTV = findViewById(R.id.tvEquation);
+        initializeButtons();
+        initializeListeners();
 
-        assignId(clear, R.id.btnClear);
-        assignId(b1, R.id.btnOne);
-        assignId(b2, R.id.btnTwo);
-        assignId(b3, R.id.btnThree);
-        assignId(b4, R.id.btnFour);
-        assignId(b5, R.id.btnFive);
-        assignId(b6, R.id.btnSix);
-        assignId(b7, R.id.btnSeven);
-        assignId(b8, R.id.btnEight);
-        assignId(b9, R.id.btnNine);
-        assignId(b0, R.id.btnZero);
-        assignId(b00, R.id.btnDoubleZero);
-        assignId(addition, R.id.btnAdd);
-        assignId(subtraction, R.id.btnSubtract);
-        assignId(multiplication, R.id.btnMultiply);
-        assignId(division, R.id.btnDivide);
-        assignId(open, R.id.btnOpenPar);
-        assignId(close, R.id.btnClosePar);
-        assignId(equals, R.id.btnEquals);
-        assignId(btnDot, R.id.btnPeriod);
-
+        textView = findViewById(R.id.textView);
+        input = new StringBuilder();
     }
 
-    void assignId(MaterialButton btn, int id) {
-        btn = findViewById(id);
-        btn.setOnClickListener(this);
+    private void initializeButtons() {
+        int[] digitButtonIds = {R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9};
+        int[] operatorButtonIds = {R.id.btnAdd, R.id.btnSubtract, R.id.btnMultiply, R.id.btnDivide};
+
+        for (int digitButtonId : digitButtonIds) {
+            findViewById(digitButtonId).setOnClickListener(digitClickListener);
+        }
+
+        for (int operatorButtonId : operatorButtonIds) {
+            findViewById(operatorButtonId).setOnClickListener(operatorClickListener);
+        }
+
+        findViewById(R.id.btnDot).setOnClickListener(dotClickListener);
+        findViewById(R.id.btnOpenParenthesis).setOnClickListener(parenthesisClickListener);
+        findViewById(R.id.btnCloseParenthesis).setOnClickListener(parenthesisClickListener);
+        findViewById(R.id.btnEqual).setOnClickListener(equalClickListener);
     }
 
-    @Override
-    public void onClick(View view) {
-        MaterialButton button = (MaterialButton) view;
-        String buttonText = button.getText().toString();
-        String CalculateData = equationTV.getText().toString();
+    private void initializeListeners() {
+        findViewById(R.id.btnAC).setOnClickListener(acClickListener);
+        findViewById(R.id.btnClear).setOnClickListener(clearClickListener);
+    }
 
-        if(buttonText.equals("=")) {
-            equationTV.setText(answerTV.getText());
-            return;
+    private View.OnClickListener digitClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Button button = (Button) v;
+            input.append(button.getText());
+            updateTextView();
         }
-        if(buttonText.equals("C")) {
-            equationTV.setText("");
-            answerTV.setText("0");
+    };
+
+    private View.OnClickListener operatorClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Button button = (Button) v;
+            input.append(button.getText());
+            updateTextView();
         }
+    };
 
+    private View.OnClickListener dotClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (!input.toString().contains(".")) {
+                input.append(".");
+                updateTextView();
+            }
+        }
+    };
 
+    private View.OnClickListener parenthesisClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Button button = (Button) v;
+            input.append(button.getText());
+            updateTextView();
+        }
+    };
 
+    private View.OnClickListener acClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            input.setLength(0);
+            updateTextView();
+        }
+    };
+
+    private View.OnClickListener clearClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (input.length() > 0) {
+                input.deleteCharAt(input.length() - 1);
+                updateTextView();
+            }
+        }
+    };
+
+    private View.OnClickListener equalClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            evaluateExpression();
+        }
+    };
+
+    private void updateTextView() {
+        textView.setText(input.toString());
+    }
+
+    private void evaluateExpression() {
+        try {
+            DecimalFormat decimalFormat = new DecimalFormat("#.####");
+            double result = evaluate(input.toString());
+            input.setLength(0);
+            input.append(decimalFormat.format(result));
+            updateTextView();
+        } catch (Exception e) {
+            handleEvaluationError();
+        }
+    }
+
+    private double evaluate(String expression) {
+        try {
+            Expression e = new ExpressionBuilder(expression).build();
+            return e.evaluate();
+        } catch (ArithmeticException | IllegalArgumentException e) {
+            throw new RuntimeException("Error during expression evaluation", e);
+        }
+    }
+
+    private void handleEvaluationError() {
+        input.setLength(0);
+        input.append("Error");
+        updateTextView();
     }
 }
