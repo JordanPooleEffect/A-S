@@ -3,28 +3,27 @@ package com.example.androidstudiocollection;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-
-import java.text.DecimalFormat;
 
 public class CalculatorExercise extends AppCompatActivity {
 
     private TextView textView;
-    private StringBuilder input;
+    private EditText textEdit;
+    private CalculatorExerciseObject calculatorObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculator_exercise);
 
+        textView = findViewById(R.id.textView);
+        textEdit = findViewById(R.id.textEdit);
+        calculatorObject = new CalculatorExerciseObject(textView, textEdit);
+
         initializeButtons();
         initializeListeners();
-
-        textView = findViewById(R.id.textView);
-        input = new StringBuilder();
     }
 
     private void initializeButtons() {
@@ -50,31 +49,26 @@ public class CalculatorExercise extends AppCompatActivity {
         findViewById(R.id.btnClear).setOnClickListener(clearClickListener);
     }
 
-    private View.OnClickListener digitClickListener = new View.OnClickListener() {
+    public View.OnClickListener digitClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Button button = (Button) v;
-            input.append(button.getText());
-            updateTextView();
+            calculatorObject.digitClick(button, textEdit);
         }
     };
 
-    private View.OnClickListener operatorClickListener = new View.OnClickListener() {
+    public View.OnClickListener operatorClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Button button = (Button) v;
-            input.append(button.getText());
-            updateTextView();
+            calculatorObject.operatorClick(button, textView, textEdit);
         }
     };
 
     private View.OnClickListener dotClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!input.toString().contains(".")) {
-                input.append(".");
-                updateTextView();
-            }
+            calculatorObject.dotClick();
         }
     };
 
@@ -82,64 +76,28 @@ public class CalculatorExercise extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             Button button = (Button) v;
-            input.append(button.getText());
-            updateTextView();
+            calculatorObject.parenthesisClick(button);
         }
     };
 
     private View.OnClickListener acClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            input.setLength(0);
-            updateTextView();
+            calculatorObject.acClick();
         }
     };
 
     private View.OnClickListener clearClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (input.length() > 0) {
-                input.deleteCharAt(input.length() - 1);
-                updateTextView();
-            }
+            calculatorObject.clearClick();
         }
     };
 
     private View.OnClickListener equalClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            evaluateExpression();
+            calculatorObject.equalClick();
         }
     };
-
-    private void updateTextView() {
-        textView.setText(input.toString());
-    }
-
-    private void evaluateExpression() {
-        try {
-            DecimalFormat decimalFormat = new DecimalFormat("#.####");
-            double result = evaluate(input.toString());
-            input.setLength(0);
-            input.append(decimalFormat.format(result));
-            updateTextView();
-        } catch (Exception e) {
-            handleEvaluationError();
-        }
-    }
-
-    private double evaluate(String expression) {
-        try {
-            Expression e = new ExpressionBuilder(expression).build();
-            return e.evaluate();
-        } catch (ArithmeticException | IllegalArgumentException e) {
-            throw new RuntimeException("Error during expression evaluation", e);
-        }
-    }
-
-    private void handleEvaluationError() {
-        input.setLength(0);
-        input.append("Error");
-        updateTextView();
-    }
 }
