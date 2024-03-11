@@ -38,7 +38,13 @@ public class CalculatorExerciseObject {
         }
     }
 
+    private boolean isLastOperationEquals = false;
+
     public void digitClick(Button button, EditText targetTextEdit) {
+        if (isLastOperationEquals) {
+            acClick();
+            isLastOperationEquals = false;
+        }
         input.append(button.getText());
         updateTextEdit(targetTextEdit);
     }
@@ -66,22 +72,21 @@ public class CalculatorExerciseObject {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
-    public void dotClick() {
-        int dotCount = 0;
-        int length = input.length();
-        // char lastChar = length > 0 ? input.charAt(length - 1) : 0;
-        char lastChar;
-        if (length > 0) {
-            lastChar = input.charAt(length - 1);
-        } else {
-            lastChar = 0;
-        }
+    private int dotCount = 0;
 
-        if (length == 0 || isOperator(lastChar) || (lastChar != '.' && dotCount < 2)) {
+    public void dotClick() {
+        int length = input.length();
+        char lastChar = length > 0 ? input.charAt(length - 1) : 0;
+
+        if (lastChar == '.') {
+            input.deleteCharAt(length - 1);
+            dotCount--;
+        } else if (length == 0 || isOperator(lastChar) || dotCount < 2) {
             input.append(".");
-            updateTextView(textView);
             dotCount++;
         }
+
+        updateTextView(textView);
     }
 
     public void parenthesisClick(Button button) {
