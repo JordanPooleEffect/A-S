@@ -51,18 +51,13 @@ public class CalculatorExerciseObject {
 
         if (input.length() > 0) {
             char lastChar = input.charAt(input.length() - 1);
-            if (isOperator(lastChar)) {
-                input.append(previousResult);
-            }
 
             if (isOperator(lastChar) && isOperator(button.getText().charAt(0))) {
                 input.setCharAt(input.length() - 1, button.getText().charAt(0));
-                input.append(previousResult);
             } else {
                 input.append(button.getText());
             }
         }
-
         updateTextView(targetTextView);
     }
 
@@ -72,9 +67,20 @@ public class CalculatorExerciseObject {
     }
 
     public void dotClick() {
-        if (!input.toString().contains(".")) {
+        int dotCount = 0;
+        int length = input.length();
+        // char lastChar = length > 0 ? input.charAt(length - 1) : 0;
+        char lastChar;
+        if (length > 0) {
+            lastChar = input.charAt(length - 1);
+        } else {
+            lastChar = 0;
+        }
+
+        if (length == 0 || isOperator(lastChar) || (lastChar != '.' && dotCount < 2)) {
             input.append(".");
             updateTextView(textView);
+            dotCount++;
         }
     }
 
@@ -87,6 +93,7 @@ public class CalculatorExerciseObject {
         expressionStack.clear();
         input.setLength(0);
         updateTextView(textView);
+        textView.setText("0");
         updateTextEdit(textEdit);
     }
 
@@ -114,7 +121,7 @@ public class CalculatorExerciseObject {
             evaluateExpression();
             updateStackAndEditText();
             input.append(previousResult);
-            updateTextView(textView);
+            textView.setText("");
         }
 
     }
@@ -127,16 +134,22 @@ public class CalculatorExerciseObject {
             input.append(decimalFormat.format(result));
             updateTextEdit(textEdit);
         } catch (Exception e) {
-            handleEvaluationError();
+            handleEvaluationError(e);
         }
     }
 
     private double evaluate(String expression) {
-        Expression e = new ExpressionBuilder(expression).build();
-        return e.evaluate();
+        try {
+            Expression e = new ExpressionBuilder(expression).build();
+            return e.evaluate();
+        } catch (ArithmeticException | IllegalArgumentException e) {
+            handleEvaluationError(e);
+            return Double.NaN;
+        }
     }
 
-    private void handleEvaluationError() {
+    private void handleEvaluationError(Exception e) {
+        e.printStackTrace();
         input.setLength(0);
         input.append("Error");
         updateTextView(textView);
