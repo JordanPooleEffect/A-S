@@ -55,7 +55,7 @@ public class CalculatorExercise extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             Button button = (Button) v;
-            calculatorObject.digitClick(button, textEdit);
+            calculatorObject.digitClick(button);
         }
     };
 
@@ -63,7 +63,7 @@ public class CalculatorExercise extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             Button button = (Button) v;
-            calculatorObject.operatorClick(button, textView, textEdit);
+            calculatorObject.operatorClick(button, textView);
         }
     };
 

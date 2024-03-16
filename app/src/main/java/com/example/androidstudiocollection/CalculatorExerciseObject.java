@@ -1,5 +1,6 @@
 package com.example.androidstudiocollection;
 
+import android.annotation.SuppressLint;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,22 +40,22 @@ public class CalculatorExerciseObject {
     }
 
     private boolean isLastOperationEquals = false;
+    private boolean lastOperationWasOperator = false;
 
-    public void digitClick(Button button, EditText targetTextEdit) {
+    public void digitClick(Button button) {
         if (isLastOperationEquals) {
             acClick();
             isLastOperationEquals = false;
         }
         input.append(button.getText());
-        updateTextEdit(targetTextEdit);
+        updateTextView(textView);
+        if (lastOperationWasOperator) {
+            evaluateExpression();
+            lastOperationWasOperator = false;
+        }
     }
 
-    public void operatorClick(Button button, TextView targetTextView, EditText targetTextEdit) {
-        if (targetTextEdit.getText().length() > 0) {
-            targetTextView.setText(targetTextEdit.getText());
-            targetTextEdit.setText("");
-        }
-
+    public void operatorClick(Button button, TextView targetTextView) {
         if (input.length() > 0) {
             char lastChar = input.charAt(input.length() - 1);
 
@@ -63,8 +64,9 @@ public class CalculatorExerciseObject {
             } else {
                 input.append(button.getText());
             }
+            targetTextView.setText(input.toString());
         }
-        updateTextView(targetTextView);
+        lastOperationWasOperator = true;
     }
 
 
@@ -128,16 +130,22 @@ public class CalculatorExerciseObject {
             input.append(previousResult);
             textView.setText("");
         }
-
+        isLastOperationEquals = true;
     }
 
     private void evaluateExpression() {
         try {
-            DecimalFormat decimalFormat = new DecimalFormat("#.####");
-            double result = evaluate(input.toString());
-            input.setLength(0);
-            input.append(decimalFormat.format(result));
-            updateTextEdit(textEdit);
+            String equation = input.toString();
+            double result = evaluate(equation);
+            textEdit.setText(String.valueOf(result));
+
+            /*if (!isLastOperationEquals) {
+                DecimalFormat decimalFormat = new DecimalFormat("#.####");
+                double result1 = evaluate(input.toString());
+                input.setLength(0);
+                input.append(decimalFormat.format(result1));
+                updateTextEdit(textEdit);
+            }*/
         } catch (Exception e) {
             handleEvaluationError(e);
         }
