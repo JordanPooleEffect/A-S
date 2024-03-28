@@ -1,6 +1,7 @@
 package com.example.androidstudiocollection;
 
 import android.annotation.SuppressLint;
+import android.text.Editable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,7 +14,6 @@ import java.text.DecimalFormat;
 import java.util.Stack;
 
 public class CalculatorExerciseObject {
-
     private StringBuilder input;
     private Stack<String> expressionStack;
     private TextView textView;
@@ -69,7 +69,6 @@ public class CalculatorExerciseObject {
         lastOperationWasOperator = true;
     }
 
-
     private boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
@@ -87,7 +86,6 @@ public class CalculatorExerciseObject {
             input.append(".");
             dotCount++;
         }
-
         updateTextView(textView);
     }
 
@@ -119,7 +117,7 @@ public class CalculatorExerciseObject {
     public void equalClick() {
         updateTextView(textView);
 
-        if (input.length() == 0 || isOperator(input.charAt(input.length() - 1))) {
+        if(input.length() == 0 || isOperator(input.charAt(input.length() - 1))) {
             evaluateExpression();
             updateStackAndEditText();
             previousResult = evaluate(input.toString());
@@ -133,43 +131,22 @@ public class CalculatorExerciseObject {
         isLastOperationEquals = true;
     }
 
+    // MY PROBLEM: IS THAT EVALUATING EXPRESSION MDAS OR SEQUENTIALLY DEPENDS ON THE CONTENTS OF TEXTVIEW DUE TO INPUT.TOSTRING()
+    // MY OWN SOLUTION WOULD BE TO STORE THE WHOLE EQUATION TO SOMETHING.
+    // MAYBE PROPERLY ADD THE STACK QUEUE CODE....
+    // OR MAYBE HAVE A PRECENDENCE...
+    // OR CHANGE THE WHOLE CODE...
+
     private void evaluateExpression() {
         try {
-            String equation = input.toString();
-            double result = evaluate(equation);
+            String expression = input.toString(); // ari mag base ang evaluation, depende sa contents sa textview
+            double result = evaluate(expression);
             textEdit.setText(String.valueOf(result));
-
-            /*if (!isLastOperationEquals) {
-                DecimalFormat decimalFormat = new DecimalFormat("#.####");
-                double result1 = evaluate(input.toString());
-                input.setLength(0);
-                input.append(decimalFormat.format(result1));
-                updateTextEdit(textEdit);
-            }*/
-        } catch (Exception e) {
-            handleEvaluationError(e);
-        }
-    }
-
-    private double evaluate(String expression) {
-        try {
-            Expression e = new ExpressionBuilder(expression).build();
-            return e.evaluate();
         } catch (ArithmeticException | IllegalArgumentException e) {
-            handleEvaluationError(e);
-            return Double.NaN;
+            input.setLength(0);
+            textView.setText("Error");
+            e.printStackTrace();
         }
-    }
-
-    private void handleEvaluationError(Exception e) {
-        e.printStackTrace();
-        input.setLength(0);
-        input.append("Error");
-        updateTextView(textView);
-    }
-
-    private void pushToStack(String expression) {
-        expressionStack.push(expression);
     }
 
     private String popFromStack() {
@@ -183,6 +160,22 @@ public class CalculatorExerciseObject {
         if (!input.toString().isEmpty()) {
             pushToStack(input.toString());
             input.setLength(0);
+        }
+    }
+
+    private void pushToStack(String expression) {
+        expressionStack.push(expression);
+    }
+
+    private double evaluate(String expression) {
+        try {
+            Expression e = new ExpressionBuilder(expression).build();
+            return e.evaluate();
+        } catch (ArithmeticException | IllegalArgumentException e) {
+            input.setLength(0);
+            textView.setText("Error");
+            e.printStackTrace();
+            return Double.NaN;
         }
     }
 }
